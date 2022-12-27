@@ -58,6 +58,21 @@ void draw_window(){
     draw_horizline2_aty(1, col_tbar);
     for(int i=3;i<22;i++) draw_horizline2_aty(i, col_wcont);
 
+    setcolor(col_wcont);
+    attron(A_BOLD);
+    mvaddstr(3, 3, "File ");
+    attroff(A_BOLD);
+
+    /*
+    3- File Menu
+    */
+
+    if(!menu.compare("/")){
+        
+    }else if(!menu.compare("/file/")){
+        
+    }
+
     draw_tbar("Program Manager");
 
     setcolor(col_terminal);
@@ -67,13 +82,10 @@ void draw_window(){
     refresh();   
 }
 
-void draw_menu(){
-
-}
-
 int main(){
     char key = 0;
     Pos curpos = {1,1};
+    char mych = 0;
 
     WINDOW *currwindow = initscr();
     start_color();
@@ -86,13 +98,14 @@ int main(){
     init_pair(col_bg, 15, 6);
     init_pair(col_border, 7, 8);
     init_pair(col_tbar, 15, 4);
-    init_pair(col_wcont, 0, 15);
+    init_pair(col_wcont, 0, 7);
 
     fillwithcolor(col_bg);
     refresh();
 
     draw_window();
     move(curpos.x,curpos.y);
+    mych = mvinch(0,0);
     
     while(key!=0x1b){
         key = getch();
@@ -115,7 +128,10 @@ int main(){
                 move(curpos.y,curpos.x);
             break;
             case 0xa:
-                printf("X:%02d,Y:%02d", curpos.x, curpos.y);
+                if(curpos.x == 3 && curpos.y == 1) key = 0x1b;
+                else if(curpos.y == 3){
+                     if(curpos.x > 2 && curpos.x < 7) key = 0x1b;
+                }
             break;
             case 65:
                 dgb = !dgb;
@@ -123,7 +139,6 @@ int main(){
         }
     }
     
-    std::cout << '\n';
     endwin();
     return 0;
 }
