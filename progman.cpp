@@ -10,6 +10,8 @@ const int col_border = 3;
 const int col_tbar = 4;
 const int col_wcont = 5;
 
+bool dgb = 0;
+
 const char lowerletters[26] = {
     'a','b','c','d','e','f','g','h','i','j',
     'k','l','m','n','o','p','q','r','s','t',
@@ -38,8 +40,13 @@ void draw_horizline2_aty(int y, int color){
 }
 
 void draw_tbar(std::string tbtext){
+    setcolor(col_border);
+    attron(A_BOLD);
+    mvaddstr(1, 2, "[-]");
     setcolor(col_tbar);
-    mvaddstr(1, 2, tbtext.c_str());
+    attron(A_BOLD);
+    mvaddstr(1, 6, tbtext.c_str());
+    attroff(A_BOLD);
 }
 
 void draw_window(){
@@ -51,7 +58,7 @@ void draw_window(){
     draw_horizline2_aty(1, col_tbar);
     for(int i=3;i<22;i++) draw_horizline2_aty(i, col_wcont);
 
-    draw_tbar("[-] Program Manager");
+    draw_tbar("Program Manager");
 
     setcolor(col_terminal);
     for(int i=0;i<23;i++) mvaddch(i, 79, ' ');
@@ -66,11 +73,12 @@ void draw_menu(){
 
 int main(){
     char key = 0;
-    Pos curpos = {0,0};
+    Pos curpos = {1,1};
 
-    initscr();
+    WINDOW *currwindow = initscr();
     start_color();
     noecho();
+    keypad(currwindow, true);
     
     move(0,0);
 
@@ -84,12 +92,38 @@ int main(){
     refresh();
 
     draw_window();
+    move(curpos.x,curpos.y);
     
     while(key!=0x1b){
         key = getch();
+        if(dgb) printf("\n%02X", key);
+        switch(key){
+            case 0x3:
+                curpos.y--;
+                move(curpos.y,curpos.x);
+            break;
+            case 0x2:
+                curpos.y++;
+                move(curpos.y,curpos.x);
+            break;
+            case 0x4:
+                curpos.x--;
+                move(curpos.y,curpos.x);
+            break;
+            case 0x5:
+                curpos.x++;
+                move(curpos.y,curpos.x);
+            break;
+            case 0xa:
+                printf("X:%02d,Y:%02d", curpos.x, curpos.y);
+            break;
+            case 65:
+                dgb = !dgb;
+            break;
+        }
     }
     
-    //std::cout << '\n';
+    std::cout << '\n';
     endwin();
     return 0;
 }
