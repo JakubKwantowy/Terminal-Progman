@@ -25,6 +25,8 @@ typedef struct {
     int y;
 } Pos;
 
+Pos curpos = {0,0};
+
 void draw_horizline_aty(int y){
     mvaddch(y,0, '+');
     mvaddch(y,78, '+');
@@ -70,7 +72,12 @@ void draw_window(){
     if(!menu.compare("/")){
         
     }else if(!menu.compare("/file/")){
-        
+        setcolor(col_border);
+                       // 00
+                       // 567
+        mvaddstr(4, 3, "+-----+");
+        mvaddstr(5, 3, "| Run |");
+        mvaddstr(6, 3, "+-----+");
     }
 
     draw_tbar("Program Manager");
@@ -79,12 +86,18 @@ void draw_window(){
     for(int i=0;i<23;i++) mvaddch(i, 79, ' ');
     for(int i=0;i<80;i++) mvaddch(23, i, ' ');
     
-    refresh();   
+    refresh();  
+}
+
+void menu_draw(std::string newmenu){
+    menu = newmenu;
+
+    draw_window();
+    move(curpos.y, curpos.x); 
 }
 
 int main(){
     char key = 0;
-    Pos curpos = {1,1};
     char mych = 0;
 
     WINDOW *currwindow = initscr();
@@ -104,7 +117,6 @@ int main(){
     refresh();
 
     draw_window();
-    move(curpos.x,curpos.y);
     mych = mvinch(0,0);
     
     while(key!=0x1b){
@@ -130,7 +142,13 @@ int main(){
             case 0xa:
                 if(curpos.x == 3 && curpos.y == 1) key = 0x1b;
                 else if(curpos.y == 3){
-                     if(curpos.x > 2 && curpos.x < 7) key = 0x1b;
+                     if(curpos.x > 2 && curpos.x < 7) menu_draw("/file/");
+                }
+
+                if(!menu.compare("/file/")){
+                    if(curpos.x > 4 && curpos.x < 8){
+                        if(curpos.y == 5) key = 0x1b;
+                    }
                 }
             break;
             case 65:
