@@ -2,6 +2,7 @@
 #include <ncurses.h>
 #include <fstream>
 #include <stdio.h>
+#include <stdlib.h>
 #include "cursecolor.h"
 
 const int col_terminal = 1;
@@ -11,6 +12,8 @@ const int col_tbar = 4;
 const int col_wcont = 5;
 
 bool dgb = 0;
+
+WINDOW *currwindow;
 
 const char lowerletters[26] = {
     'a','b','c','d','e','f','g','h','i','j',
@@ -52,6 +55,8 @@ void draw_tbar(std::string tbtext){
 }
 
 void draw_window(){
+    fillwithcolor(col_bg);
+
     setcolor(col_border);
     draw_horizline_aty(0);
     draw_horizline_aty(2);
@@ -74,10 +79,12 @@ void draw_window(){
     }else if(!menu.compare("/file/")){
         setcolor(col_border);
                        // 00
-                       // 567
-        mvaddstr(4, 3, "+-----+");
-        mvaddstr(5, 3, "| Run |");
-        mvaddstr(6, 3, "+-----+");
+                       // 5678
+        mvaddstr(4, 3, "+------+");
+        mvaddstr(5, 3, "| Run  |");
+        mvaddstr(6, 3, "+------+");
+        mvaddstr(7, 3, "| Exit |");
+        mvaddstr(8, 3, "+------+");
     }
 
     draw_tbar("Program Manager");
@@ -96,11 +103,28 @@ void menu_draw(std::string newmenu){
     move(curpos.y, curpos.x); 
 }
 
+void menu_file_run(){
+    char command[256];
+    mvaddstr(23, 0, "Enter Command to Run: ");
+    echo();
+    getnstr(command, 256);
+    noecho();
+    endwin();
+    system(command);
+
+    currwindow = initscr();
+    start_color();
+    noecho();
+    keypad(currwindow, true);
+
+    menu_draw("/");
+}
+
 int main(){
     char key = 0;
     char mych = 0;
 
-    WINDOW *currwindow = initscr();
+    currwindow = initscr();
     start_color();
     noecho();
     keypad(currwindow, true);
@@ -113,9 +137,6 @@ int main(){
     init_pair(col_tbar, 15, 4);
     init_pair(col_wcont, 0, 7);
 
-    fillwithcolor(col_bg);
-    refresh();
-
     draw_window();
     mych = mvinch(0,0);
     
@@ -124,18 +145,22 @@ int main(){
         if(dgb) printf("\n%02X", key);
         switch(key){
             case 0x3:
+                if(curpos.y < 1) break;
                 curpos.y--;
                 move(curpos.y,curpos.x);
             break;
             case 0x2:
+                if(curpos.y >= LINES - 1) break;
                 curpos.y++;
                 move(curpos.y,curpos.x);
             break;
             case 0x4:
+                if(curpos.x < 1) break;
                 curpos.x--;
                 move(curpos.y,curpos.x);
             break;
             case 0x5:
+                if(curpos.x >= COLS - 1) break;
                 curpos.x++;
                 move(curpos.y,curpos.x);
             break;
@@ -146,8 +171,9 @@ int main(){
                 }
 
                 if(!menu.compare("/file/")){
-                    if(curpos.x > 4 && curpos.x < 8){
-                        if(curpos.y == 5) key = 0x1b;
+                    if(curpos.x > 4 && curpos.x < 9){
+                        if(curpos.y == 5) menu_file_run();
+                        if(curpos.y == 7) key = 0x1b;
                     }
                 }
             break;
